@@ -13,7 +13,7 @@ export function LocationSelector(props) {
             <StyledLabel htmlFor="urbanAreas">
                 {props.formLabel}
             </StyledLabel>
-            <StyledSelect id="urbanAreas" name="location">
+            <StyledSelect id="urbanAreas" name={props.name}>
                 {props.children}
             </StyledSelect>
         </DropdownWrapper>
@@ -23,7 +23,7 @@ export function LocationSelector(props) {
 
 export function Option(props) {
     return (
-        <StyledOption selected={props.selected} infolink={props.infolink}>
+        <StyledOption selected={props.selected} data-infolink={props.infolink}>
             {props.value}
         </StyledOption>
     )
