@@ -13,38 +13,34 @@ class App extends React.Component {
       secondArea: "",
       secondAreaInfo: []
     };
-    this.handleSelect = this.handleSelect.bind(this);
-    this.handleSelect2 = this.handleSelect2.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.fetchAreaInfo = this.fetchAreaInfo.bind(this);
   }
 
-  async fetchAreaInfo(areaName) {
+  fetchAreaInfo = async (infolink) => {
     // var result;
     return fetch(
-      "https://api.teleport.org/api/urban_areas/slug:" + areaName + "/"
+      infolink
     ).then((res) => res.json())
     .then((json) => {
       return json;
     })
   }
 
-  async handleSelect(e) {
+  handleSelect = async (e) => {
+    console.log(e.target.name);
     console.log(e.target.value);
-    this.setState({firstArea: e.target.value, firstAreaInfo: await this.fetchAreaInfo(e.target.value.toLowerCase()) });
+    var areaState = e.target.name;
+    var infoState = e.target.name + "Info";
+
+    var info = await this.fetchAreaInfo(e.target.selectedOptions[0].attributes["data-infolink"].value);
+    this.setState({[areaState]: e.target.value, [infoState]: info });
   }
 
-  async handleSelect2(e) {
-    console.log(e.target.value);
-    this.setState({secondArea: e.target.value, secondAreaInfo: await this.fetchAreaInfo(e.target.value.toLowerCase())  });
-  }
-
-  handleSubmit(e) {
+  handleSubmit = (e) => {
     e.preventDefault();
     console.log(this.state.firstArea);
   }
 
-  componentDidMount() {
+  componentDidMount = () => {
     fetch(
       "https://api.teleport.org/api/urban_areas/"
     ).then((res) => res.json())
@@ -71,9 +67,30 @@ class App extends React.Component {
           <p><span class="bold">Full Name:</span> {props.Info.full_name}</p>
           <p><span class="bold">Continent:</span> {props.Info.continent}</p>
           <p><span class="bold">Lat/Lon:</span> {JSON.stringify(props.Info.bounding_box.latlon)}</p>
-          
           <p><span class="bold">City URL:</span> {props.Info.teleport_city_url}</p>
           <p><span class="bold">Is Govt Partner:</span> {JSON.stringify(props.Info.is_government_partner)}</p>
+        </div>
+      )
+    }
+
+    function UrbanAreaPanel(props) {
+      var label = "Urban Area " + props.index;
+      return (
+        <div className="panelWrapper">
+          <LocationSelector
+            formLabel={label}
+            name = {props.name}
+            onChange={props.onchange}
+            action="https://jsonplaceholder.typicode.com/posts"
+            defaultValue="Click to see options">
+              <Option value="Click to see options" />
+              {                
+                areas._links["ua:item"].map((l, index) => (
+                  <Option key={index} infolink={l.href} value={l.name} />
+                ))
+              }
+          </LocationSelector>
+          <AreaInfo Name={props.area} Info={props.areainfo} />
         </div>
       )
     }
@@ -81,38 +98,11 @@ class App extends React.Component {
     return (
       <div className="App">
         <h1>Compare Urban Areas</h1>
-          <div class="panelWrapper">
-            <LocationSelector
-              formLabel="Urban Area 1"
-              onChange={this.handleSelect}
-              action="https://jsonplaceholder.typicode.com/posts"
-              defaultValue="Click to see options">
-                <Option value="Click to see options" />
-                {                
-                  areas._links["ua:item"].map((l, index) => (
-                    <Option key={index} infolink={l.href} value={l.name} />
-                  ))
-                }
-                
-            </LocationSelector>
-            
-            <AreaInfo Name={this.state.firstArea} Info={this.state.firstAreaInfo}></AreaInfo>
-          </div>
-          <div className="panelWrapper">
-              <LocationSelector
-                formLabel="Urban Area 2"
-                onChange={this.handleSelect2}
-                action="https://jsonplaceholder.typicode.com/posts"
-                defaultValue="Click to see options">
-                  <Option value="Click to see options" />
-                  {                
-                    areas._links["ua:item"].map((l, index) => (
-                      <Option key={index} value={l.name} />
-                    ))
-                  }
-              </LocationSelector>
-              <AreaInfo Name={this.state.secondArea} Info={this.state.secondAreaInfo}></AreaInfo>
-          </div>
+
+          <UrbanAreaPanel index="1" name="firstArea" onchange={this.handleSelect} area={this.state.firstArea} areainfo={this.state.firstAreaInfo} />
+
+          <UrbanAreaPanel index="2" name="secondArea" onchange={this.handleSelect} area={this.state.secondArea} areainfo={this.state.secondAreaInfo} />
+          
       </div>
     );
   }
